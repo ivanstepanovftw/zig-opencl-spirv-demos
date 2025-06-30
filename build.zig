@@ -85,8 +85,6 @@ pub fn build(b: *std.Build) void {
         .abi = .none,
         .cpu_features_add = std.Target.spirv.featureSet(&.{
             .int64,
-            .int16,
-            .int8,
             .float64,
             .float16,
             .vector16,
@@ -113,5 +111,10 @@ pub fn build(b: *std.Build) void {
 
     db.addDemo("reduce", "src/reduce.zig", &.{
         db.addKernel("reduce-kernel", "src/kernels/reduce.zig"),
+    });
+
+    // https://github.com/ziglang/zig/issues/24281
+    db.addDemo("miscomp", "src/miscomp.zig", &.{
+        db.addKernel("miscomp-kernel", "src/kernels/miscomp.zig"),
     });
 }
