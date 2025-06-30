@@ -12,7 +12,7 @@ Note: hangs when PoCL is used.
 
 ---
 
-[`src/kernel/miscomp.zig`](/src/kernel/miscomp.zig) disassembly:
+[`src/kernels/miscomp.zig`](/src/kernels/miscomp.zig) disassembly:
 
 ```shell
 zig build dis-miscomp-kernel
