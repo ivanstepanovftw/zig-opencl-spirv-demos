@@ -119,8 +119,10 @@ fn pickPlatformAndDevice(
 
     for (platforms) |platform| {
         const platform_name = try platform.getName(a);
+        defer a.free(platform_name);
+
         if (maybe_platform_query) |platform_query| {
-            if (std.mem.indexOf(u8, platform_name, platform_query) == null) {
+            if (!std.mem.eql(u8, platform_name, platform_query)) {
                 continue;
             }
         }
@@ -128,6 +130,8 @@ fn pickPlatformAndDevice(
         std.log.debug("trying platform '{s}'", .{platform_name});
 
         const devices = try platform.getDevices(a, cl.DeviceType.all);
+        defer a.free(devices);
+
         if (devices.len == 0) {
             if (maybe_platform_query != null) {
                 fail("platform '{s}' has no devices available", .{platform_name});
