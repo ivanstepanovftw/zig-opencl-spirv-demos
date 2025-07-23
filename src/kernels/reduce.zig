@@ -20,7 +20,7 @@ fn reduce(
     output: [*]addrspace(.global) f32,
     last_block: u32,
     valid_in_last_block: u32,
-) callconv(.Kernel) void {
+) callconv(.kernel) void {
     const bid = @workGroupId(0);
     const tid = @workItemId(0);
     const block_offset = bid * items_per_block;

@@ -13,11 +13,13 @@ const DemoBuild = struct {
     opencl: *std.Build.Module,
 
     fn addKernel(self: DemoBuild, name: []const u8, root_source_file: []const u8) Kernel {
-        const kernel = self.b.addStaticLibrary(.{
-            .name = "saxpy-kernel",
-            .root_source_file = self.b.path(root_source_file),
-            .target = self.device_target,
-            .optimize = self.optimize,
+        const kernel = self.b.addObject(.{
+            .name = name,
+            .root_module = self.b.addModule(name, .{
+                .target = self.device_target,
+                .optimize = self.optimize,
+                .root_source_file = self.b.path(root_source_file),
+            }),
             .use_llvm = false,
             .use_lld = false,
         });
@@ -27,7 +29,7 @@ const DemoBuild = struct {
 
         const dis_step = self.b.step(
             self.b.fmt("dis-{s}", .{name}),
-            self.b.fmt("Disassemble the {s} kernel ({s})", .{name, root_source_file}),
+            self.b.fmt("Disassemble the {s} kernel ({s})", .{ name, root_source_file }),
         );
         dis_step.dependOn(&dis.step);
 
@@ -38,7 +40,7 @@ const DemoBuild = struct {
     }
 
     fn addSpvasmKernel(self: DemoBuild, name: []const u8, root_source_file: []const u8) Kernel {
-        const as = self.b.addSystemCommand(&.{"spirv-as", "--target-env", "spv1.4"});
+        const as = self.b.addSystemCommand(&.{ "spirv-as", "--target-env", "spv1.4" });
         as.addFileArg(self.b.path(root_source_file));
         as.addArg("-o");
         const spv = as.addOutputFileArg(self.b.fmt("{s}.spv", .{name}));
@@ -48,10 +50,12 @@ const DemoBuild = struct {
     fn addDemo(self: DemoBuild, name: []const u8, root_source_file: []const u8, kernels: []const Kernel) void {
         const exe = self.b.addExecutable(.{
             .name = name,
-            .root_source_file = self.b.path(root_source_file),
-            .target = self.host_target,
-            .optimize = self.optimize,
-            .link_libc = true,
+            .root_module = self.b.addModule(name, .{
+                .root_source_file = self.b.path(root_source_file),
+                .target = self.host_target,
+                .optimize = self.optimize,
+                .link_libc = true,
+            }),
         });
         exe.root_module.addImport("opencl", self.opencl);
         for (kernels) |kernel| {
@@ -85,8 +89,6 @@ pub fn build(b: *std.Build) void {
         .abi = .none,
         .cpu_features_add = std.Target.spirv.featureSet(&.{
             .int64,
-            .int16,
-            .int8,
             .float64,
             .float16,
             .vector16,
