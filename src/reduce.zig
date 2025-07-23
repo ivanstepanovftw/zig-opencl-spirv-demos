@@ -47,7 +47,7 @@ pub fn main() !void {
     while (remaining_size != 1) {
         const blocks = std.math.divCeil(usize, remaining_size, reduce.items_per_block) catch unreachable;
         const valid_in_last_block = remaining_size % reduce.items_per_block;
-        std.log.debug("reducing {} items over {} block(s)", .{ remaining_size, blocks });
+        std.log.debug("reducing {d} items over {d} block(s)", .{ remaining_size, blocks });
 
         try kernel.setArg(@TypeOf(d_input), 0, d_input);
         try kernel.setArg(@TypeOf(d_output), 1, d_output);
@@ -90,7 +90,7 @@ pub fn main() !void {
         const stop = try last_event.commandEndTime();
         const runtime = stop - start;
         const tput = input.len * @sizeOf(f32) * std.time.ns_per_s / runtime;
-        std.log.info("reduction took {d:.2} us, {:.2}/s", .{runtime / std.time.ns_per_us, std.fmt.fmtIntSizeBin(tput)});
+        std.log.info("reduction took {d:.2} us, {Bi:.2}/s", .{runtime / std.time.ns_per_us, tput});
     }
 
     // input.len * random in [0, 1) yields an average of input.len * 0.5
