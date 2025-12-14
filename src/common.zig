@@ -86,6 +86,7 @@ pub fn parseOptions(a: Allocator) !DeviceAndPlatform {
 }
 
 fn deviceSupportsSpirv(a: Allocator, device: cl.Device) !bool {
+    _ = &.{a, device};
     // 1. Попытка через OpenCL 3.0 (getILsWithVersion).
     // На T4 в Colab это вызывает ошибку CL_INVALID_VALUE (-30).
     // Мы перехватываем ошибку и идем дальше.
