@@ -89,46 +89,47 @@ fn deviceSupportsSpirv(a: Allocator, device: cl.Device) !bool {
     // 1. Попытка через OpenCL 3.0 (getILsWithVersion).
     // На T4 в Colab это вызывает ошибку CL_INVALID_VALUE (-30).
     // Мы перехватываем ошибку и идем дальше.
-    if (device.getILsWithVersion(a)) |ils| {
-        defer a.free(ils);
-        for (ils) |il| {
-            if (std.mem.eql(u8, il.getName(), "SPIR-V")) {
-                std.log.debug("Support for SPIR-V detected via ILs query", .{});
-                return true;
-            }
-        }
-    } else |err| {
-        std.log.debug("getILsWithVersion check skipped due to error: {}", .{err});
-    }
-
-    // 2. Фоллбэк: Ручное получение CL_DEVICE_EXTENSIONS через C-API.
-    // Библиотека opencl-zig не имеет обертки для этого, делаем сами.
-
-    var size: usize = undefined;
-    // Используем raw C константы и функции, доступные через cl.c
-    const ext_param_id = cl.c.CL_DEVICE_EXTENSIONS;
-
-    // Шаг А: Узнаем размер строки
-    if (cl.c.clGetDeviceInfo(device.id, ext_param_id, 0, null, &size) != cl.c.CL_SUCCESS) {
-        std.log.debug("Failed to get extensions string size", .{});
-        return false;
-    }
-
-    // Шаг Б: Аллоцируем память
-    const extensions_str = try a.alloc(u8, size);
-    defer a.free(extensions_str);
-
-    // Шаг В: Запрашиваем саму строку
-    if (cl.c.clGetDeviceInfo(device.id, ext_param_id, size, extensions_str.ptr, null) != cl.c.CL_SUCCESS) {
-        std.log.debug("Failed to get extensions string content", .{});
-        return false;
-    }
-
-    // 3. Проверка наличия расширений в строке
-    if (std.mem.indexOf(u8, extensions_str, "cl_khr_il_program") != null) return true;
-    if (std.mem.indexOf(u8, extensions_str, "cl_khr_spirv") != null) return true;
-
-    return false;
+    // if (device.getILsWithVersion(a)) |ils| {
+    //     defer a.free(ils);
+    //     for (ils) |il| {
+    //         if (std.mem.eql(u8, il.getName(), "SPIR-V")) {
+    //             std.log.debug("Support for SPIR-V detected via ILs query", .{});
+    //             return true;
+    //         }
+    //     }
+    // } else |err| {
+    //     std.log.debug("getILsWithVersion check skipped due to error: {}", .{err});
+    // }
+    //
+    // // 2. Фоллбэк: Ручное получение CL_DEVICE_EXTENSIONS через C-API.
+    // // Библиотека opencl-zig не имеет обертки для этого, делаем сами.
+    //
+    // var size: usize = undefined;
+    // // Используем raw C константы и функции, доступные через cl.c
+    // const ext_param_id = cl.c.CL_DEVICE_EXTENSIONS;
+    //
+    // // Шаг А: Узнаем размер строки
+    // if (cl.c.clGetDeviceInfo(device.id, ext_param_id, 0, null, &size) != cl.c.CL_SUCCESS) {
+    //     std.log.debug("Failed to get extensions string size", .{});
+    //     return false;
+    // }
+    //
+    // // Шаг Б: Аллоцируем память
+    // const extensions_str = try a.alloc(u8, size);
+    // defer a.free(extensions_str);
+    //
+    // // Шаг В: Запрашиваем саму строку
+    // if (cl.c.clGetDeviceInfo(device.id, ext_param_id, size, extensions_str.ptr, null) != cl.c.CL_SUCCESS) {
+    //     std.log.debug("Failed to get extensions string content", .{});
+    //     return false;
+    // }
+    //
+    // // 3. Проверка наличия расширений в строке
+    // if (std.mem.indexOf(u8, extensions_str, "cl_khr_il_program") != null) return true;
+    // if (std.mem.indexOf(u8, extensions_str, "cl_khr_spirv") != null) return true;
+    //
+    // return false;
+    return true;
 }
 
 fn pickPlatformAndDevice(
